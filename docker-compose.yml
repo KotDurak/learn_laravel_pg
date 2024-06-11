@@ -1,0 +1,103 @@
+version: '3'
+
+networks:
+  laravel:
+
+
+services:
+  app:
+    build:
+      context: ./dockerfiles
+      dockerfile: nginx.dockerfile
+      args:
+        - UID=${UID:-1000}
+        - GID=${GID:-1000}
+    ports:
+      - "8000:80"
+    volumes:
+      - ./src:/var/www/html:delegated
+    depends_on:
+      - php
+      - redis
+      - postgres
+    networks:
+      - laravel
+
+  postgres:
+    image: postgres:16.2-alpine
+    environment:
+      POSTGRES_DB: trips
+      POSTGRES_USER: trips
+      POSTGRES_PASSWORD: secret
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+    ports:
+      - '54320:5432'
+    networks:
+      - laravel
+
+  php:
+    build:
+      context: ./dockerfiles
+      dockerfile: php.dockerfile
+      args:
+        - UID=${UID:-1000}
+        - GID=${GID:-1000}
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./src:/var/www/html:delegated
+    networks:
+      - laravel
+
+  redis:
+    image: redis:7.2.5
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - laravel
+
+  composer:
+    build:
+      context: ./dockerfiles
+      dockerfile: php.dockerfile
+      args:
+        - UID=${UID:-1000}
+        - GID=${GID:-1000}
+    volumes:
+      - ./src:/var/www/html
+    depends_on:
+      - php
+    entrypoint: [ 'composer', '--ignore-platform-reqs' ]
+    networks:
+      - laravel
+
+  npm:
+    image: node:22.2.0
+    volumes:
+      - ./src:/var/www/html
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+      - "5173:5173"
+    working_dir: /var/www/html
+    entrypoint: [ 'npm' ]
+    networks:
+      - laravel
+
+  artisan:
+    build:
+      context: ./dockerfiles
+      dockerfile: php.dockerfile
+      args:
+        - UID=${UID:-1000}
+        - GID=${GID:-1000}
+    volumes:
+      - ./src:/var/www/html:delegated
+    depends_on:
+      - postgres
+    entrypoint: [ 'php', '/var/www/html/artisan' ]
+    networks:
+      - laravel
