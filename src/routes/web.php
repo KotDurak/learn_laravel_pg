@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Facades\RateLimiter;
 
 /*
 |--------------------------------------------------------------------------
@@ -100,4 +101,16 @@ Route::get('/queue', function() {
     \App\Jobs\ProcessTest::dispatch($user);
 
     return 'Queue';
+});
+
+Route::get('/rate-limit', function() {
+   $executed = RateLimiter::attempt('send', 2, function() {
+       return 'skotina';
+   });
+
+   return $executed;
+});
+
+Route::get('/str', function() {
+    return class_basename(Route::class);
 });
