@@ -114,3 +114,7 @@ Route::get('/rate-limit', function() {
 Route::get('/str', function() {
     return class_basename(Route::class);
 });
+
+Route::get('func', function() {
+    return 'get_func';
+});

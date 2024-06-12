@@ -1,7 +1,8 @@
 up:
-	docker-compose up -d
+	docker-compose up -d; \
+	 echo http://localhost:8000
 down:
-	docker-compose down
+	docker-compose down -v
 dev:
 	docker-compose run --rm --service-ports npm run dev
 build:
