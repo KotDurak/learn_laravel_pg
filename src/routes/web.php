@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 
 /*
 |--------------------------------------------------------------------------
@@ -112,9 +113,7 @@ Route::get('/rate-limit', function() {
 });
 
 Route::get('/str', function() {
+    $string = Str::of(__DIR__);
+    dd($string->dirname());
     return class_basename(Route::class);
-});
-
-Route::get('func', function() {
-    return 'get_func';
 });
