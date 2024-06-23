@@ -52,6 +52,38 @@ Route::get('/post-update/{post}', function(Request $request, Post $post) {
     return $post->content;
 })->middleware('can:update,post');
 
+Route::group(['prefix' => 'database'], function() {
+    Route::get('/', function(Request $request) {
+        $limit = $request->input('per-page', 10);
+        $page = $request->input('page', 1);
+        $offset = ($page - 1) * $limit;
+
+        $users = DB::select("SELECT * FROM users LIMIT ? OFFSET ?", [$limit, $offset]);
+        $count = DB::scalar("SELECT COUNT(*) FROM users");
+        $pageCount = (int)ceil($count / $limit);
+
+        return view('database.select', [
+            'users' => $users,
+            'total'  => $count,
+            'pageCount' => $pageCount
+        ]);
+    });
+
+    Route::get('/builder', function() {
+        $post = DB::table('posts')->find(2);
+        $countPosts = DB::table('posts')->where('user_id', 1)->ddRawSql();
+        dd($countPosts);
+    });
+
+    Route::get('/paginate', function() {
+        $users = DB::table('users')->paginate(10);
+
+        return view('database.paginate', [
+            'users' => $users,
+        ]);
+    });
+});
+
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
