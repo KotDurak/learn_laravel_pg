@@ -1,12 +1,14 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Gate;
 use App\Models\User;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
+use App\Models\Trip;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -106,6 +108,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+Route::prefix('trips')->name('trips')->group(function() {
+   Route::get('/', function() {
+       $trip = Trip::first();
+       dd($trip instanceof HasFactory);
+
+       return view('trips.index', [
+           'trips'  => Trip::paginate(20)
+       ]);
+   });
 });
 
 require __DIR__.'/auth.php';
