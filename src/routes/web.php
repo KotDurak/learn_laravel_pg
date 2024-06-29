@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Gate;
 use App\Models\User;
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redis;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -81,6 +82,19 @@ Route::group(['prefix' => 'database'], function() {
         return view('database.paginate', [
             'users' => $users,
         ]);
+    });
+
+    Route::get('/redis', function(Request $request) {
+
+        $work = Redis::get('test');
+        $name = $request->input('name', 'Tigr');
+        Redis::publish('my-test', json_encode([
+            'name'  => $name,
+            'date'  => date('Y-m-d H:i:s')
+        ]));
+
+
+        return 'redis';
     });
 });
 
