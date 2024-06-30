@@ -1,14 +1,15 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Gate;
-use App\Models\User;
 use App\Models\Post;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Redis;
 use App\Models\Trip;
+use App\Models\User;
+use Database\Factories\Http\Controllers\ProfileController;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Route;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -120,5 +121,63 @@ Route::prefix('trips')->name('trips')->group(function() {
        ]);
    });
 });
+
+Route::group(['prefix' => 'relations'], function() {
+    Route::get('/', function()  {
+        $posts = Auth::user()->posts;
+    });
+
+    Route::get('/roles', function() {
+        $roles = Auth::user()->roles;
+        $hasAdmin = Auth::user()->roles()->where('name', 'admin')->exists();
+
+        if ($hasAdmin) {
+            return 'Yo are admin)';
+        }
+
+        return 'Idi rabotai, durak)';
+    });
+
+    Route::get('/pivot', function() {
+        $user = Auth::user();
+        dd($user->roles_count);
+
+        foreach ($user->roles as $role) {
+            $pivot = $role->pivot;
+            dd($pivot);
+        }
+
+        return [];
+    });
+
+    Route::get('/fill-roles/{id}', function(Request $request, $id) {
+        /* @var User $user */
+       $user = User::find($id);
+       $roles = \App\Models\Role::find($request->input('role', [2]));
+       $user->roles()->attach($roles);
+
+       return 'OK )';
+    });
+});
+
+Route::get('/accessors', function() {
+    $trip = Trip::find(1);
+    $route = $trip->route;
+
+    echo date('U');
+});
+
+Route::get('/serialize', function() {
+
+  $user = User::with('roles')->find(1);
+
+  return $user->toArray();
+});
+
+Route::get('/trips/list', function() {
+    return Trip::paginate(20);
+});
+
+
 
 require __DIR__.'/auth.php';

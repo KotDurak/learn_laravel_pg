@@ -17,3 +17,5 @@ init:
 	docker-compose run --rm composer create-project laravel/laravel:^10.0 .
 npm_i:
 	docker-compose run --rm npm install
+unit:
+	docker-compose run --rm artisan test --testsuite=Unit --stop-on-failure
